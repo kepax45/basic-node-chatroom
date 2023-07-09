@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {background-image: url('background.jpg')}
+        textarea {width:800px; height:800px}
+        input {width:700px; height:50px}
+        button {width:100px; height:50px}
+    </style>
+    <title>Chatroom (<%= data.value1 %>)</title>
+</head>
+<body>
+    <textarea id="chatbox" name="chatbox" rows="4" cols="50" readonly></textarea><br>
+    <input id="in"><button id="sendbtn">Send</button>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        sendMessage = () => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://127.0.0.1:80/sendmsg");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            content = input.value
+            if(content==="")
+                return
+            body = JSON.stringify({
+                username: username,
+                content: content
+            })
+            xhr.send(body);
+            input.value = "";
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        button = document.getElementById("sendbtn");
+        input = document.getElementById("in")
+        const socket = io('http://127.0.0.1:3000')
+        socket.on("connect", () => {
+            console.log("connected");
+        })
+        socket.on("msgupdate", (text) => {
+            console.log(text)
+            document.getElementById("chatbox").textContent = text
+            console.log("yes")
+        })
+        button.addEventListener("click", sendMessage);
+        document.addEventListener("keypress", function(event) {
+        var key = event.key;
+        if (key === "Enter") {
+            sendMessage();
+        }
+});
+    </script>
+</body>
+</html>
